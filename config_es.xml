@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+    <name>customsearchia</name>
+    <displayName><![CDATA[Buscador de productos en tiempo real]]></displayName>
+    <version><![CDATA[1.0.0]]></version>
+    <description><![CDATA[Con este modulo podemos hacer un listado de productos en el front]]></description>
+    <author><![CDATA[Guille P]]></author>
+    <tab><![CDATA[front_office_features]]></tab>
+	<confirmUninstall><![CDATA[Esta seguro que quiere eliminar el modulo? :(]]></confirmUninstall>
+    <is_configurable>0</is_configurable>
+    <need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>
