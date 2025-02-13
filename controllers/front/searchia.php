@@ -9,6 +9,7 @@ class CustomsearchiaSearchiaModuleFrontController extends ModuleFrontController
         try {
             $base_url = (Configuration::get('PS_SSL_ENABLED') ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . __PS_BASE_URI__;
             $ajax_url = $base_url.'modules/customsearchia/ajax.php?token='.Tools::encrypt('customsearchia/ajax.php');
+            $url_webhook = Configuration::get('BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK');
             
             if (!file_exists(_PS_MODULE_DIR_ . 'customsearchia/ajax.php')) {
                 throw new Exception('El archivo ajax.php no existe.');
@@ -20,6 +21,7 @@ class CustomsearchiaSearchiaModuleFrontController extends ModuleFrontController
                 'url_ajax' => $ajax_url,
                 'search_query' => $search_query,
                 'base_dir' => $base_url,
+                'url_webhook' => $url_webhook
             ));
             
             $this->setTemplate('module:customsearchia/views/templates/front/search.tpl');

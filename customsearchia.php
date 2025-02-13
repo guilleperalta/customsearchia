@@ -39,6 +39,7 @@ class Customsearchia extends Module
         $this->registerHook('displayCustomSearchButton');
         Configuration::updateValue('BUSCADOR_CUSTOMSEARCHIA', 'Buscador Customsearchia');
         Configuration::updateValue('BUSCADOR_CUSTOMSEARCHIA_PATH','/modules/'.$this->name);
+        Configuration::updateValue('BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK','');
         return true;
     }
         
@@ -51,6 +52,7 @@ class Customsearchia extends Module
         $this->unregisterHook('displayCustomSearchButton');
         Configuration::deleteByName('BUSCADOR_CUSTOMSEARCHIA');
         Configuration::deleteByName('BUSCADOR_CUSTOMSEARCHIA_PATH');
+        Configuration::deleteByName('BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK');
         return true;
     }
     
@@ -74,30 +76,62 @@ class Customsearchia extends Module
         return $this->display(__FILE__, 'views/templates/front/search-input-mobile.tpl');
     }
 
-    // Función para buscar productos en la base de datos
-    public function searchProducts($search)
-    {
-        $words = explode(' ', $search);
-        $conditions = array_map(function($word) {
-            return 'pl.name LIKE "%' . pSQL($word) . '%"';
-        }, $words);
-        $whereClause = implode(' OR ', $conditions);
+    // // Función para buscar productos en la base de datos
+    // public function searchProducts($search)
+    // {
+    //     $words = explode(' ', $search);
+    //     $conditions = array_map(function($word) {
+    //         return '(pl.name LIKE "%' . pSQL($word) . '%" OR tp.reference LIKE "%' . pSQL($word) . '%")';
+    //     }, $words);
+    //     $whereClause = implode(' OR ', $conditions);
 
+    //     $products = Db::getInstance()->executeS('SELECT pl.id_product, pl.name, tp.price
+    //     FROM '._DB_PREFIX_.'product_lang pl
+    //     JOIN '._DB_PREFIX_.'product tp ON (pl.id_product = tp.id_product)
+    //     WHERE pl.id_lang = '.(int)$this->context->language->id.' 
+    //     AND pl.id_shop = '.(int)$this->context->shop->id.' 
+    //     AND tp.active = 1 
+    //     AND (' . $whereClause . ')');
+
+    //     foreach ($products as &$product) {
+    //         $product['image'] = $this->getProductImageUrl($product['id_product']);
+    //         $product['is_wishlist'] = $this->isProductInWishlist($product['id_product']);
+    //         $product['is_compare'] = $this->isProductInCompare($product['id_product']);
+    //     }
+
+    //     return $products;
+    // }
+
+    // Función para buscar productos por IDs
+    public function searchProductsByIds($productIds)
+    {
+        $ids = implode(',', array_map('intval', $productIds));
         $products = Db::getInstance()->executeS('SELECT pl.id_product, pl.name, tp.price
         FROM '._DB_PREFIX_.'product_lang pl
         JOIN '._DB_PREFIX_.'product tp ON (pl.id_product = tp.id_product)
         WHERE pl.id_lang = '.(int)$this->context->language->id.' 
         AND pl.id_shop = '.(int)$this->context->shop->id.' 
         AND tp.active = 1 
-        AND (' . $whereClause . ')');
+        AND tp.id_product IN (' . $ids . ')');
 
+        // Crear un array asociativo con los productos
+        $productsById = [];
         foreach ($products as &$product) {
             $product['image'] = $this->getProductImageUrl($product['id_product']);
             $product['is_wishlist'] = $this->isProductInWishlist($product['id_product']);
             $product['is_compare'] = $this->isProductInCompare($product['id_product']);
+            $productsById[$product['id_product']] = $product;
         }
 
-        return $products;
+        // Reordenar los productos según el orden de $productIds
+        $orderedProducts = [];
+        foreach ($productIds as $id) {
+            if (isset($productsById[$id])) {
+                $orderedProducts[] = $productsById[$id];
+            }
+        }
+
+        return $orderedProducts;
     }
 
     // Función para verificar si un producto está en la lista de deseos
@@ -160,5 +194,82 @@ class Customsearchia extends Module
             $this->context->controller->addJS('modules/'.$this->name.'/views/js/front.js');
             $this->context->controller->addCSS('modules/'.$this->name.'/views/css/front.css', 'all');
         }
+    }
+
+    // Necesito agregar un formulario en el backoffice para poder agregar a la base la url del webhook
+
+    public function getContent()
+    {
+        $output = null;
+        if (Tools::isSubmit('submit'.$this->name)) {
+            $url_webhook = strval(Tools::getValue('BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK'));
+            if (!$url_webhook || empty($url_webhook) || !Validate::isGenericName($url_webhook)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value'));
+            } else {
+                Configuration::updateValue('BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK', $url_webhook);
+                $output .= $this->displayConfirmation($this->l('Settings updated'));
+            }
+        }
+        return $output.$this->displayForm();
+    }
+
+    public function displayForm()
+    {
+        // Get default language
+        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+        
+        // Init Fields form array
+        $fields_form[0]['form'] = [
+            'legend' => [
+                'title' => $this->l('Settings'),
+            ],
+            'input' => [
+                [
+                    'type' => 'text',
+                    'label' => $this->l('URL Webhook'),
+                    'name' => 'BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK',
+                    'size' => 20,
+                    'required' => true
+                ]
+            ],
+            'submit' => [
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            ]
+        ];
+        
+        $helper = new HelperForm();
+        
+        // Module, t    oken and currentIndex
+        $helper->module = $this;
+        $helper->name_controller = $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
+        
+        // Language
+        $helper->default_form_language = $default_lang;
+        $helper->allow_employee_form_lang = $default_lang;
+        
+        // Title and toolbar
+        $helper->title = $this->displayName;
+        $helper->show_toolbar = true;        // false -> remove toolbar
+        $helper->toolbar_scroll = true;      // yes - > Toolbar is always visible on the top of the screen.
+        $helper->submit_action = 'submit'.$this->name;
+        $helper->toolbar_btn = [
+            'save' => [
+                'desc' => $this->l('Save'),
+                'href' => AdminController::$currentIndex.'&configure='.$this->name.'&save'.$this->name.
+                '&token='.Tools::getAdminTokenLite('AdminModules'),
+            ],
+            'back' => [
+                'href' => AdminController::$currentIndex.'&token='.Tools::getAdminTokenLite('AdminModules'),
+                'desc' => $this->l('Back to list')
+            ]
+        ];
+        
+        // Load current value
+        $helper->fields_value['BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK'] = Configuration::get('BUSCADOR_CUSTOMSEARCHIA_URL_WEBHOOK');
+        
+        return $helper->generateForm($fields_form);
     }
 }

@@ -10,10 +10,15 @@
         <link rel="icon" type="image/vnd.microsoft.icon"
             href="https://aco-web.globalthink.io/img/favicon.ico?1733846870">
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+        <script src="{$base_dir}modules/customsearchia/views/js/front.js"></script>
     </head>
 
     <body id="customsearchia">
         {include file="layouts/layout-both-columns.tpl"}
+        <div id="url_webhook" style="display:none;">
+            {$url_webhook|escape:'html':'UTF-8'}
+        </div>
         <div class="full-screen-container">
             <div id="notifications-chat"></div> <!-- Contenedor para notificaciones -->
             <div class="content-container">
@@ -32,8 +37,7 @@
                     </div>
                     <div class="chat-input-container">
                         <input type="text" id="search" class="form-control" placeholder="buscar"
-                            value="{$search_query|escape:'html':'UTF-8'}"
-                            onkeypress="if(event.key === 'Enter') searchProduct(this.value)" />
+                            value="{$search_query|escape:'html':'UTF-8'}" />
                         <button id="clear-chat" class="btn btn-danger">
                             <i class="fa fa-trash"></i>
                         </button>
@@ -45,18 +49,6 @@
         <div id="url" style="display:none;">
             {$url_ajax|escape:'html':'UTF-8'}
         </div>
-        <script src="{$base_dir}modules/customsearchia/views/js/front.js"></script>
-        <script>
-            $(document).ready(function() {
-                var urlParams = new URLSearchParams(window.location.search);
-                var searchQuery = urlParams.get('search');
-                if (searchQuery) {
-                    $('#search').val(searchQuery);
-                    searchProduct(searchQuery);
-                    window.history.replaceState(null, null, "?search=" + searchQuery);
-                }
-            });
-        </script>
     </body>
 
 </html>

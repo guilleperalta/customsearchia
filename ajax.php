@@ -14,6 +14,12 @@ if ($token != $token_url || !Module::isInstalled($module_name)) {
 
 $module = Module::getInstanceByName($module_name);
 if ($module->active) {
+    $productIds = Tools::getValue('productIds');
+    if ($productIds) {
+        echo json_encode($module->searchProductsByIds($productIds));
+        exit;
+    }
+
 	$search = pSQL(Tools::getValue('search'));
     if ($search != '') {
         echo json_encode($module->searchProducts($search));

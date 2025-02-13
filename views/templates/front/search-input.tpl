@@ -6,9 +6,9 @@
 <script>
     function redirectToSearchDesktop(event) {
         if (event.key === 'Enter') {
-            var searchQueryDesktop = document.getElementById('header-search-desktop').value;
-            var url = '{$custom_search_url|escape:'html':'UTF-8'}' + '?search=' + encodeURIComponent(searchQueryDesktop);
-            window.location.href = url;
+            var searchQuery = document.getElementById('header-search-desktop').value;
+            document.cookie = "initialMessage=" + encodeURIComponent(searchQuery) + "; path=/";
+            window.location.href = '{$custom_search_url|escape:'html':'UTF-8'}';
         }
     }
 </script>
@@ -32,7 +32,7 @@
 
     .search-icon {
         position: absolute;
-        right: 10px;
+        right: 20px;
         color: black;
     }
 </style>
