@@ -12,6 +12,10 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
         <script src="{$base_dir}modules/customsearchia/views/js/front.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet">
     </head>
 
     <body id="customsearchia">
@@ -32,15 +36,23 @@
                 </div>
                 <div class="chat-column">
                     <button class="close-chat">&times;</button>
+                    <div class="chat-header">
+                        <img src="{$base_dir}modules/customsearchia/img/logo-chat.png" alt="Logo" width="34px"
+                            height="34px" style="border-radius: 50%;" />
+                        <div class="chat-header-text">
+                            <h3>ACO Asistente</h3>
+                            <span><span id="puntito"></span>Activo</span>
+                        </div>
+                    </div>
                     <div id="chat">
                         <!-- Aquí irán los mensajes del chat -->
                     </div>
                     <div class="chat-input-container">
-                        <input type="text" id="search" class="form-control" placeholder="buscar"
+                        <img src="{$base_dir}modules/customsearchia/img/trash.svg" alt="borrar chat" id="clear-chat" style="margin-right: 6px;" />
+                        <input type="text" id="search" class="form-control" placeholder="Escribe tu mensaje"
                             value="{$search_query|escape:'html':'UTF-8'}" />
-                        <button id="clear-chat" class="btn btn-danger">
-                            <i class="fa fa-trash"></i>
-                        </button>
+
+                        <img src="{$base_dir}modules/customsearchia/img/send.svg" alt="Enviar" id="send" />
                     </div>
                 </div>
                 <button class="floating-chat-button" style="display: none;">💬</button>

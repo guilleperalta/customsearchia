@@ -29,8 +29,9 @@ $(document).ready(function () {
     var initialMessage = getCookie('initialMessage');
     if (initialMessage) {
         initialMessage = decodeURIComponent(initialMessage); // Decodificar el mensaje
+        var time = getCurrentTime();
         sendMessage(initialMessage);
-        var userMessage = `<div class="message user">${initialMessage}</div>`;
+        var userMessage = `<div class="message user">${initialMessage}</div><div class="message-time" style="text-align: right;">${time}</div>`;
         $('#chat').append(userMessage);
         var spinnerMessage = `<div class="message bot" id="spinner-message">
                                   <div class="typing-indicator">
@@ -44,24 +45,59 @@ $(document).ready(function () {
         saveChatHistory();
     }
 
-    // Buscar productos al presionar Enter
-    $('#search').on('keypress', function (event) {
-        if (event.key === 'Enter') {
-            var message = $(this).val();
-            sendMessage(message);
-            var userMessage = `<div class="message user">${message}</div>`;
-            $('#chat').append(userMessage);
-            var spinnerMessage = `<div class="message bot" id="spinner-message">
-                                  <div class="typing-indicator">
-                                      <span></span><span></span><span></span>
-                                  </div>
-                              </div>`;
-            $('#chat').append(spinnerMessage); 
-            scrollToBottom();
-            $(this).val('');
-            saveChatHistory();
+    // Función para obtener la hora actual en formato HH:MM
+    function getCurrentTime() {
+        var now = new Date();
+        return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
+
+    // Función para mostrar el mensaje con animación de escritura
+    function typeMessage(element, message, callback) {
+        var index = 0;
+        function type() {
+            if (index < message.length) {
+                element.append(document.createTextNode(message.charAt(index)));
+                index++;
+                setTimeout(type, 30); // Ajustar la velocidad de escritura aquí
+                scrollToBottom();
+            } else {
+                if (callback) callback();
+            }
         }
+        type();
+    }
+
+    // Buscar productos al presionar Enter
+    $(document).ready(function () {
+        $('#search').on('keypress', function (event) {
+            if (event.key === 'Enter') {
+                sendMessageAndUpdateChat();
+            }
+        });
+
+        $('#send').on('click', function () {
+            sendMessageAndUpdateChat();
+        });
     });
+
+    // Enviar mensaje y actualizar el chat
+    function sendMessageAndUpdateChat() {
+        var message = $('#search').val();
+        if (!message) return;
+        var time = getCurrentTime();
+        sendMessage(message);
+        var userMessage = `<div class="message user">${message}</div><div class="message-time" style="text-align: right;">${time}</div>`;
+        $('#chat').append(userMessage);
+        var spinnerMessage = `<div class="message bot" id="spinner-message">
+                              <div class="typing-indicator">
+                                  <span></span><span></span><span></span>
+                              </div>
+                          </div>`;
+        $('#chat').append(spinnerMessage);
+        scrollToBottom();
+        $('#search').val('');
+        saveChatHistory();
+    }
 
     // Limpiar chat
     $('#clear-chat').on('click', function () {
@@ -130,17 +166,21 @@ $(document).ready(function () {
     socket.on('assistantResponse', function(response) {
         // console.log('Respuesta del asistente:', response);
         $('#spinner-message').remove(); // Eliminar el spinner
-        var botMessage = `<div class="message bot">${response.message}</div>`;
+        var time = getCurrentTime();
+        var botMessage = `<div class="message bot"><span class="message-text"></span></div><div class="message-time" style="text-align: left;">${time}</div>`;
         $('#chat').append(botMessage);
-        scrollToBottom();
-        setCookie('threadId', response.threadId, 6);
-        threadId = response.threadId;
-        saveChatHistory();
+        var messageElement = $('#chat .message.bot:last .message-text');
+        typeMessage(messageElement, response.message, function() {
+            scrollToBottom();
+            setCookie('threadId', response.threadId, 6);
+            threadId = response.threadId;
+            saveChatHistory();
+        });
     });
 
     // Manejar los resultados de búsqueda
     socket.on('searchResults', function(response) {
-        // console.log('Resultados de búsqueda:', response);
+        console.log('Resultados de búsqueda:', response);
         var productIds = response.results.map(result => result.p_id);
         searchProductsByIds(productIds);
         if (Array.isArray(productIds) || productIds.length >= 0) {
@@ -193,12 +233,18 @@ $(document).ready(function () {
                     $('#no-results').show();
                 }
                 scrollToBottom();
+                scrollToTop();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error al buscar productos:', textStatus, errorThrown);
                 alert('Hubo un error al buscar productos. Revisa la consola para más detalles.');
             }
         });
+    }
+
+    // Función para hacer scroll hasta el inicio del listado de productos
+    function scrollToTop() {
+        $('.product-column').scrollTop(0); // Asegurarse de que el contenedor padre tenga el desplazamiento
     }
 
     // Función para ajustar la altura de full-screen-container
