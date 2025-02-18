@@ -9,11 +9,11 @@ $(document).ready(function () {
 
     // Verificar la conexión WebSocket
     socket.on('connect', function() {
-        console.log('Conectado al servidor WebSocket');
+        // console.log('Conectado al servidor WebSocket');
     });
 
     socket.on('disconnect', function() {
-        console.log('Desconectado del servidor WebSocket');
+        // console.log('Desconectado del servidor WebSocket');
     });
 
     socket.on('connect_error', function(error) {
@@ -115,20 +115,20 @@ $(document).ready(function () {
 
     // Función para enviar mensajes por WebSocket
     function sendMessage(message) {
-        console.log('Enviando mensaje:', message);
-        console.log('threadId:', threadId);
+        // console.log('Enviando mensaje:', message);
+        // console.log('threadId:', threadId);
         socket.emit('sendMessage', {
             event: 'sendMessage',
             data: message,
             threadId: threadId
         }, function (response) {
-            console.log('Respuesta del servidor al enviar mensaje:', response);
+            // console.log('Respuesta del servidor al enviar mensaje:', response);
         });
     }
 
     // Manejar la respuesta del asistente
     socket.on('assistantResponse', function(response) {
-        console.log('Respuesta del asistente:', response);
+        // console.log('Respuesta del asistente:', response);
         $('#spinner-message').remove(); // Eliminar el spinner
         var botMessage = `<div class="message bot">${response.message}</div>`;
         $('#chat').append(botMessage);
@@ -140,7 +140,7 @@ $(document).ready(function () {
 
     // Manejar los resultados de búsqueda
     socket.on('searchResults', function(response) {
-        console.log('Resultados de búsqueda:', response);
+        // console.log('Resultados de búsqueda:', response);
         var productIds = response.results.map(result => result.p_id);
         searchProductsByIds(productIds);
         if (Array.isArray(productIds) || productIds.length >= 0) {
@@ -151,17 +151,17 @@ $(document).ready(function () {
     // Función para buscar productos por IDs
     function searchProductsByIds(productIds) {
         if (!Array.isArray(productIds) || productIds.length === 0) {
-            console.log('El array productIds está vacío o no es un array.');
+            // console.log('El array productIds está vacío o no es un array.');
             return;
         }
-        console.log('Buscando productos por IDs:', productIds);
+        // console.log('Buscando productos por IDs:', productIds);
         $.ajax({
             type: "POST",
             url: url_ajax,
             data: { 'productIds': productIds },
             dataType: "json",
             success: function(response) {
-                console.log('Respuesta de búsqueda de productos:', response);
+                // console.log('Respuesta de búsqueda de productos:', response);
                 var res = '';
                 if (response.length > 0) {
                     $.each(response, function (i, v) {
@@ -296,7 +296,7 @@ $(document).ready(function () {
         var chatHistory = $('#chat').html(); // Obtener HTML del chat
         try {
             setCookie('chatHistory', encodeURIComponent(chatHistory), 6); // Guardar en cookie
-            console.log('Historial del chat guardado correctamente.');
+            // console.log('Historial del chat guardado correctamente.');
         } catch (error) {
             console.error('Error al guardar el historial del chat:', error);
         }
@@ -309,7 +309,7 @@ $(document).ready(function () {
                 chatHistory = decodeURIComponent(chatHistory); // Decodificar correctamente
                 $('#chat').html(chatHistory);
                 scrollToBottom();
-                console.log('Historial del chat cargado correctamente.');
+                // console.log('Historial del chat cargado correctamente.');
             } catch (error) {
                 console.error('Error al cargar el historial del chat:', error);
             }
@@ -319,10 +319,10 @@ $(document).ready(function () {
     // Cargar el listado de productos
     function loadProductList() {
         var productIds = getCookie('productIds');
-        console.log('productIds:', productIds);
+        // console.log('productIds:', productIds);
         if (productIds) {
             productIds = JSON.parse(productIds);
-            console.log('productIds json parse:', productIds);
+            // console.log('productIds json parse:', productIds);
             searchProductsByIds(productIds);
         }
     }

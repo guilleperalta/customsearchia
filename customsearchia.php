@@ -19,8 +19,8 @@ class Customsearchia extends Module
         $this->need_instance = 1;
         $this->bootstrap = true;
         parent::__construct();
-        $this->displayName = $this->l('Buscador de productos en tiempo real');
-        $this->description = $this->l('Con este modulo podemos hacer un listado de productos en el front');
+        $this->displayName = $this->l('Chat con IA, para buscar productos de la tienda');
+        $this->description = $this->l('Módulo para habilitar un chat con IA para buscar productos de la tienda.');
         $this->confirmUninstall = $this->l('Esta seguro que quiere eliminar el modulo? :(');
         if (!Configuration::get('BUSCADOR_CUSTOMSEARCHIA')) {
             $this->warning = $this->l('No se encontro el dato');
@@ -75,32 +75,6 @@ class Customsearchia extends Module
         ));
         return $this->display(__FILE__, 'views/templates/front/search-input-mobile.tpl');
     }
-
-    // // Función para buscar productos en la base de datos
-    // public function searchProducts($search)
-    // {
-    //     $words = explode(' ', $search);
-    //     $conditions = array_map(function($word) {
-    //         return '(pl.name LIKE "%' . pSQL($word) . '%" OR tp.reference LIKE "%' . pSQL($word) . '%")';
-    //     }, $words);
-    //     $whereClause = implode(' OR ', $conditions);
-
-    //     $products = Db::getInstance()->executeS('SELECT pl.id_product, pl.name, tp.price
-    //     FROM '._DB_PREFIX_.'product_lang pl
-    //     JOIN '._DB_PREFIX_.'product tp ON (pl.id_product = tp.id_product)
-    //     WHERE pl.id_lang = '.(int)$this->context->language->id.' 
-    //     AND pl.id_shop = '.(int)$this->context->shop->id.' 
-    //     AND tp.active = 1 
-    //     AND (' . $whereClause . ')');
-
-    //     foreach ($products as &$product) {
-    //         $product['image'] = $this->getProductImageUrl($product['id_product']);
-    //         $product['is_wishlist'] = $this->isProductInWishlist($product['id_product']);
-    //         $product['is_compare'] = $this->isProductInCompare($product['id_product']);
-    //     }
-
-    //     return $products;
-    // }
 
     // Función para buscar productos por IDs
     public function searchProductsByIds($productIds)
